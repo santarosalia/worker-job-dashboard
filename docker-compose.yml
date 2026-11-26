@@ -1,0 +1,9 @@
+services:
+  yard:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      PORT: "8787"
+      WEB_DIST: /app/web
+    restart: unless-stopped

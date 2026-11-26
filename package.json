@@ -1,0 +1,27 @@
+{
+  "name": "yard",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "CPU job runner with a fixed worker-thread pool and a realtime dashboard",
+  "packageManager": "pnpm@10.33.4",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0"
+  }
+}
