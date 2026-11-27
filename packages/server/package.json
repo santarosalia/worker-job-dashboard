@@ -13,7 +13,8 @@
   "dependencies": {
     "@hono/node-server": "^1.19.6",
     "@yard/shared": "workspace:*",
-    "hono": "^4.10.6"
+    "hono": "^4.10.6",
+    "piscina": "5.3.2"
   },
   "devDependencies": {
     "@types/node": "^22.19.1",
