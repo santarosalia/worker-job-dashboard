@@ -1,6 +1,7 @@
 /** Cooperative cancel flag shared with a worker that may be inside a tight loop. */
-export function createCancelFlag(): Int32Array {
-  return new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT));
+export function createCancelFlag(): { flag: Int32Array; buffer: SharedArrayBuffer } {
+  const buffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT);
+  return { flag: new Int32Array(buffer), buffer };
 }
 
 export function requestCancel(flag: Int32Array): void {

@@ -43,13 +43,19 @@ describe('WorkerPool', () => {
     expect(transitions(seen)).toEqual(['queued', 'running', 'completed']);
     expect(done.result).toMatchObject({ tag: 'solo' });
     expect(done.progress).toBe(100);
-    expect(done.workerId).toBe('w1');
+    expect(done.workerId).toMatch(/^[1-9]\d*$/);
+    expect(subject.stats().workers.map((worker) => worker.id)).toContain(done.workerId);
+    const lane = subject.snapshot().lanes.find((item) => item.jobId === done.id);
+    expect(lane?.workerId).toBe(done.workerId);
+    expect(lane?.state).toBe('completed');
     expect(ticks).toBeGreaterThan(8);
   });
 
   it('never runs more jobs than the pool size and keeps FIFO order', async () => {
     const subject = createPool(2);
     await subject.whenReady();
+    expect(subject.stats().workers).toHaveLength(2);
+    expect(subject.stats().workers.every((worker) => /^[1-9]\d*$/.test(worker.id) && worker.status === 'idle')).toBe(true);
 
     let maxRunning = 0;
     const started: string[] = [];
@@ -114,8 +120,8 @@ describe('WorkerPool', () => {
     const next = subject.submit({ type: 'spin', params: { steps: 2, iters: 20_000, tag: 'after' } });
     const done = await waitForJob(subject, next.id);
     expect(done.state).toBe('completed');
-    expect(done.workerId).toBe('w1');
-    expect(subject.stats().workers).toHaveLength(1);
+    expect(done.workerId).toBe(stopped.workerId);
+    expect(subject.stats().workers.map((worker) => worker.id)).toEqual([stopped.workerId]);
   });
 
   it('fails a job that exceeds its timeout and respawns the worker for the next job', async () => {
@@ -126,11 +132,15 @@ describe('WorkerPool', () => {
     const failed = await waitForJob(subject, hung.id, 5_000);
     expect(failed.state).toBe('failed');
     expect(failed.error).toMatch(/timed out/);
+    expect(failed.workerId).toMatch(/^[1-9]\d*$/);
 
     const next = subject.submit({ type: 'spin', params: { steps: 2, iters: 30_000, tag: 'recovered' } });
     const done = await waitForJob(subject, next.id);
     expect(done.state).toBe('completed');
-    expect(subject.stats().workers.map((worker) => worker.id)).toEqual(['w1']);
+    expect(done.workerId).toMatch(/^[1-9]\d*$/);
+    expect(done.workerId).not.toBe(failed.workerId);
+    expect(subject.stats().workers).toHaveLength(1);
+    expect(subject.stats().size).toBe(1);
   });
 
   it('marks a crashed job failed and respawns the worker', async () => {
